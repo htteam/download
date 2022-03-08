@@ -9,6 +9,7 @@ import requests, json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_name('tonal-loader-343318-21656014eb9a.json', scope)
 client = gspread.authorize(creds)
@@ -23,15 +24,37 @@ url_wallet = config['url_wallet']
 xpath_url_exploder = '//*[@id="__next"]/div/main/div[2]/div[1]/div[1]/div/div[1]/span[1]/text()[2]'
 xpath_url_wallet = '//*[@id="__next"]/div/div/main/div/div/div/div/div/div/div/div/table/tbody/tr/td[2]/span/span/text()'
 
+
 def start(update, context):
+    if update.message.chat.type == 'private':
+        user = str(update.message.chat.username)
+        if user in data['users']:
+            data['users'].append(user)
+            message = "Chào mừng đến với bot của anh Hiếu đẹp trai"
+            update.message.reply_text(message)
+        else:
+            message = "Please contact @ShadowCaptain"
+            update.message.reply_text(message)
+
+def join(update, context):
     if update.message.chat.type == 'private':
         user = str(update.message.chat.username)
         if user not in data['users']:
             data['users'].append(user)
+            message = "Chào mừng đến với bot của anh Hiếu đẹp trai"
+            update.message.reply_text(message)
+
+def add(update, context):
+    if update.message.chat.type == 'private':
+        user = str(update.message.chat.username)
+        if user in data['users']:
             data['process'][user] = "wallet"
-            json.dump(data,open('users.json','w'))
             message = "Send me your wallet Binance Chain"
             update.message.reply_text(message)
+        else:
+            message = "Please contact @ShadowCaptain"
+            update.message.reply_text(message)
+
 
 def price(update, context):
     if update.message.chat.type == "private":
@@ -46,11 +69,11 @@ def price(update, context):
             price =''.join([str(item) for item in price_update])
             vnd = float(price)*23000
             t = time.localtime()
-            current_time = time.strftime("%H:%M:%S", t)
-            message += f"*{current_time}*\n\nUSD: {price}\nVND: {vnd}"
+            current_time = time.strftime("%H:%M", t)
+            message += f"*Price at {current_time} UTC*\nUSD: {price}\nVND: {vnd}"
             context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
         else:
-            message = "Please start bot again"
+            message = "Please contact @ShadowCaptain"
             update.message.reply_text(message)
 
 def wallet(update, context):
@@ -78,28 +101,23 @@ def wallet(update, context):
             message += f"*Your wallet: {wallet}*\n\nBalance: {blance} BNB\nUSD: {usd}\nVND: {vnd}"
             context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
         else:
-            message = "Please start bot again"
+            message = "Please contact @ShadowCaptain"
             update.message.reply_text(message)
 
 
-def extra(update, context):
+def run(update, context):
     if update.message.chat.type == 'private':
         user = str(update.message.chat.username)
-        if data["process"][user] == 'wallet':
-            data['wallet'][user] = update.message.text
-            data['process'][user] = "finished"
-            wallet_user = data['wallet'][user]
-            json.dump(data,open('users.json','w'))
-            message = '*Your wallet is:* {}'.format(wallet_user)
-            update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
-
-def run(update, context):
-    chat_id = update.effective_chat.id
-    message = ""
-    message += f"*Bot automatic send staking reward every day 7:30*"
-    context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
-    context.job_queue.run_daily(callback_start, datetime.time(hour=6, minute=50, tzinfo=pytz.timezone('Asia/Ho_Chi_Minh')),
+        if user in data['users']:
+            chat_id = update.effective_chat.id
+            message = ""
+            message += f"*Bot automatic send staking reward every day 7:30*"
+            context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
+            context.job_queue.run_daily(callback_start, datetime.time(hour=6, minute=50, tzinfo=pytz.timezone('Asia/Ho_Chi_Minh')),
                                 days=(0, 1, 2, 3, 4, 5, 6), context=update.message.chat_id)
+        else:
+            message = "Please contact @ShadowCaptain"
+            update.message.reply_text(message)
 
 def callback_start(context):
     chat_id=context.job.context
@@ -143,6 +161,7 @@ def callback_start(context):
     file_object.close()
     context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
 
+
 def status(update, context):
     if update.message.chat.type == "private":
         user = str(update.message.chat.username)
@@ -151,18 +170,33 @@ def status(update, context):
             message = ""
             with open('status.txt') as f:
                 for line in (f.readlines() [-30:]):
-                    message += f"{line}"  
+                    message += f"*Last 30 days:*\n{line}"  
             context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
         else:
-            message = "Please start bot again"
+            message = "Please contact @ShadowCaptain"
             update.message.reply_text(message)
 
 
+def extra(update, context):
+    if update.message.chat.type == 'private':
+        user = str(update.message.chat.username)
+        if data["process"][user] == 'wallet':
+            data['wallet'][user] = update.message.text
+            data['process'][user] = "finished"
+            wallet_user = data['wallet'][user]
+            json.dump(data,open('users.json','w'))
+            message = '*Your wallet is:* {}'.format(wallet_user)
+            update.message.reply_text(message, parse_mode=ParseMode.MARKDOWN)
+
+
+#//////////////////////////////////////////////////////////////////////////////////////////////#
 if __name__ == '__main__':
     data = json.load(open('users.json','r'))
     updater = Updater(TOKEN,use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start",start))
+    dp.add_handler(CommandHandler("join",join))
+    dp.add_handler(CommandHandler("add",add))
     dp.add_handler(CommandHandler("price",price))
     dp.add_handler(CommandHandler("wallet",wallet))
     dp.add_handler(CommandHandler("status",status))
