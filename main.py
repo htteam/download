@@ -170,8 +170,8 @@ def status(update, context):
             message = ""
             with open('status.txt') as f:
                 for line in (f.readlines() [-30:]):
-                    message += f"*Last 30 days:*\n{line}"  
-            context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
+                    message += f"{line}"  
+            context.bot.send_message(chat_id=chat_id, text=message)
         else:
             message = "Please contact @ShadowCaptain"
             update.message.reply_text(message)
