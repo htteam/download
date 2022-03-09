@@ -28,17 +28,6 @@ xpath_url_wallet = '//*[@id="__next"]/div/div/main/div/div/div/div/div/div/div/d
 def start(update, context):
     if update.message.chat.type == 'private':
         user = str(update.message.chat.username)
-        if user in data['users']:
-            data['users'].append(user)
-            message = "Chào mừng đến với bot của anh Hiếu đẹp trai"
-            update.message.reply_text(message)
-        else:
-            message = "Please contact @ShadowCaptain"
-            update.message.reply_text(message)
-
-def join(update, context):
-    if update.message.chat.type == 'private':
-        user = str(update.message.chat.username)
         if user not in data['users']:
             data['users'].append(user)
             message = "Chào mừng đến với bot của anh Hiếu đẹp trai"
@@ -70,7 +59,7 @@ def price(update, context):
             vnd = float(price)*23000
             t = time.localtime()
             current_time = time.strftime("%H:%M", t)
-            message += f"*Price at {current_time} UTC*\nUSD: {price}\nVND: {vnd}"
+            message += f"*Price at {current_time} UTC*\n\nUSD: {price}\nVND: {vnd}"
             context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
         else:
             message = "Please contact @ShadowCaptain"
@@ -114,7 +103,7 @@ def run(update, context):
             message += f"*Bot automatic send staking reward every day 7:30*"
             context.bot.send_message(chat_id=chat_id, text=message, parse_mode=ParseMode.MARKDOWN)
             context.job_queue.run_daily(callback_start, datetime.time(hour=6, minute=50, tzinfo=pytz.timezone('Asia/Ho_Chi_Minh')),
-                                days=(0, 1, 2, 3, 4, 5, 6), context=update.message.chat_id)
+                                days=(0, 1, 2, 3, 4, 5, 6), context=update.message.chat_id, name=user)
         else:
             message = "Please contact @ShadowCaptain"
             update.message.reply_text(message)
@@ -122,6 +111,8 @@ def run(update, context):
 def callback_start(context):
     chat_id=context.job.context
     message = ""
+    user=context.job.name
+    wallet=data['wallet'][user]
     d1 = date.today()
     exploder = requests.get(url_exploder)
     homepage = html.fromstring(exploder.content)
@@ -129,7 +120,7 @@ def callback_start(context):
     price_update = get_price
     price =''.join([str(item) for item in price_update])
 
-    exploder = requests.get(url_wallet+'bnb1n0lhme8j5f0ugmg4zyuulg6d7je8upgge2ym72')
+    exploder = requests.get(url_wallet+wallet)
     homepage = html.fromstring(exploder.content)
     get_balance = homepage.xpath(xpath_url_wallet)
     blance_update = get_balance
@@ -137,7 +128,7 @@ def callback_start(context):
 
     time.sleep(2400)
 
-    exploder = requests.get(url_wallet+'bnb1n0lhme8j5f0ugmg4zyuulg6d7je8upgge2ym72')
+    exploder = requests.get(url_wallet+wallet')
     homepage = html.fromstring(exploder.content)
     get_balance = homepage.xpath(xpath_url_wallet)
     blance_update = get_balance
