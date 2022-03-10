@@ -124,15 +124,15 @@ def callback_start(context):
     homepage = html.fromstring(exploder.content)
     get_balance = homepage.xpath(xpath_url_wallet)
     blance_update = get_balance
-    blancex = ''.join([str(item) for item in blance_update]) # blancex: get blance on 6:50 every day
+    blancex = ''.join([str(item) for item in blance_update])
 
     time.sleep(2400)
 
-    exploder = requests.get(url_wallet+wallet')
+    exploder = requests.get(url_wallet+wallet)
     homepage = html.fromstring(exploder.content)
     get_balance = homepage.xpath(xpath_url_wallet)
     blance_update = get_balance
-    blancey = ''.join([str(item) for item in blance_update]) # blancex: get blance on 7:30 every day
+    blancey = ''.join([str(item) for item in blance_update])
 
     balance_save = float(blancey)-float(blancex)
     usd = balance_save * float(price)
@@ -186,7 +186,6 @@ if __name__ == '__main__':
     updater = Updater(TOKEN,use_context=True)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start",start))
-    dp.add_handler(CommandHandler("join",join))
     dp.add_handler(CommandHandler("add",add))
     dp.add_handler(CommandHandler("price",price))
     dp.add_handler(CommandHandler("wallet",wallet))
@@ -196,4 +195,4 @@ if __name__ == '__main__':
 
     updater.start_polling()
     print("Bot Started")
-    updater.idle()            
+    updater.idle()
